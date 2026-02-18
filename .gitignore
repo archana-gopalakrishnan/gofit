@@ -2,3 +2,4 @@ workouts.json
 test_*.json
 *.exe
 *.test
+CODE_SMELLS.md
