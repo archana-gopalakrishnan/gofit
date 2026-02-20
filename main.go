@@ -25,6 +25,7 @@ const (
 	Walking WorkoutType = "walking"
 	Running  WorkoutType = "running"
 	Yoga WorkoutType = "yoga"
+	Strength WorkoutType = "strength"
 )
 
 type Workout struct {
@@ -41,7 +42,7 @@ func (w WorkoutType) Category() WorkoutCategory {
 	switch w {
 	case Cycling, Running, Walking:
 		return CategoryDistanceBased
-	case Yoga:
+	case Yoga, Strength:
 		return CategoryTimeBased
 	default:
 		return ""
@@ -49,12 +50,13 @@ func (w WorkoutType) Category() WorkoutCategory {
 }
 func IsValidWorkoutType(t WorkoutType) bool {
 	switch t {
-	case Cycling, Running, Yoga, Walking:
+	case Cycling, Running, Yoga, Walking, Strength:
 		return true
 	default:
 		return false
 	}
 }
+
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
@@ -166,16 +168,45 @@ func listWorkouts(reader *bufio.Reader, repo *WorkoutRepository) {
 		fmt.Printf("Time: %s\n", w.Time)
 		fmt.Printf("Duration: %d minutes\n", w.Duration)
 
+		factor := w.Type.Factor()
+		//var score int doesn't work and i got cannot use float64(factor) * speed (value of type float64) as int value in assignment
+		var score float64
+
 		if w.Type.Category() == CategoryDistanceBased {
 			fmt.Printf("Distance: %d metres\n", w.Distance)
 
 			if w.Duration > 0 {
 				speed := float64(w.Distance) / float64(w.Duration)
 				fmt.Printf("Average Speed: %.2f metres/minute\n", speed)
+				score = float64(factor) * speed
 			}
-		}
+			
+		} else if w.Type.Category() == CategoryTimeBased {
+			score = float64(factor * w.Duration)
+		} 
+
+		fmt.Printf("Score: %.2f\n", score)
 	}
 }
+
+func (w WorkoutType) Factor() int {
+	switch w {
+	case Yoga:
+		return 2
+	case Strength:
+		return 3
+	case Walking:
+		return 2
+	case Cycling:
+		return 4
+	case Running:
+		return 6
+	default:
+		return 1
+	}
+}
+
+
 
 func (w WorkoutType) String() string {
     return strings.ToUpper(string(w[:1])) + string(w[1:])
